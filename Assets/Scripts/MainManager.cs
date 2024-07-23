@@ -1,16 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
+
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text bestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,13 +21,15 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
     // Start is called before the first frame update
     void Start()
     {
+        
+        bestScoreText.text = $"Best Score : {DataManager.Instance.bestScorePlayerName} : {DataManager.Instance.bestScore}";
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
+
         int[] pointCountArray = new [] {1,1,2,2,5,5};
         for (int i = 0; i < LineCount; ++i)
         {
@@ -36,6 +41,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        
     }
 
     private void Update()
@@ -66,11 +73,32 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+
+        if (m_Points > DataManager.Instance.bestScore)
+        {
+            DataManager.Instance.bestScore = m_Points;
+
+            DataManager.Instance.bestScorePlayerName = DataManager.Instance.playerNewName;
+            bestScoreText.text = $"Best Score : {DataManager.Instance.bestScorePlayerName} : {DataManager.Instance.bestScore}";
+            DataManager.Instance.Save();
+        }
+        
+            
     }
+
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        if (m_Points > DataManager.Instance.bestScore)
+        {
+            DataManager.Instance.bestScore = m_Points;
+            DataManager.Instance.bestScorePlayerName = DataManager.Instance.playerNewName;
+            DataManager.Instance.Save();
+        }
+        bestScoreText.text = $"Best Score : {DataManager.Instance.bestScorePlayerName} : {DataManager.Instance.bestScore}";
     }
 }
+
